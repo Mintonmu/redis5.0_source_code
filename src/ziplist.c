@@ -6,33 +6,51 @@
  * the memory used by the ziplist, the actual complexity is related to the
  * amount of memory used by the ziplist.
  *
+ * #ziplist 压缩列表
+ * ziplist是为节约内存而设计的一种特殊编码的双链表。
+ * 它存储字符串和整数值，其中，整数被编码为实际整数，而不是一系列整数字符。
+ * 列表两端可做push,pop操作，时间复杂度是0(1)，但是，因为每一个操作都要重新分配ziplist使用的内容，
+ * 实际的复杂度与ziplist使用的内存数有关！
+ * 
+ * 
  * ----------------------------------------------------------------------------
  *
  * ZIPLIST OVERALL LAYOUT
  * ======================
- *
+ * ZIPLIST整体设计如下：
+ * 
  * The general layout of the ziplist is as follows:
  *
  * <zlbytes> <zltail> <zllen> <entry> <entry> ... <entry> <zlend>
  *
  * NOTE: all fields are stored in little endian, if not specified otherwise.
- *
+ *       各组成部分都存储在小端字节中，如果没有另外指定的话.
+ *       
  * <uint32_t zlbytes> is an unsigned integer to hold the number of bytes that
  * the ziplist occupies, including the four bytes of the zlbytes field itself.
  * This value needs to be stored to be able to resize the entire structure
  * without the need to traverse it first.
+ * zlbytes，uint32_t类型：无符号整数，用户保存ziplist占用的字节数，包括其本身的四字节，
+ * 需要存储此值，以便能够调整整个结构的大小，无需先遍历它。
  *
  * <uint32_t zltail> is the offset to the last entry in the list. This allows
  * a pop operation on the far side of the list without the need for full
  * traversal.
+ * zltail，uint32_t类型：记录压缩列表尾节点距离起始地址的字节数，通过这个偏移量，无需遍历整个
+ * 压缩列表就可以得到尾节点的地址；这样的话可直接在尾部做pop操作！
+ * 
  *
  * <uint16_t zllen> is the number of entries. When there are more than
  * 2^16-2 entries, this value is set to 2^16-1 and we need to traverse the
  * entire list to know how many items it holds.
+ * zllen  uint16_t类型：记录压缩列表包含的节点数； 当值小于2^16-1时，这个值就是压缩列表包含的
+ * 节点数，当大于等于2^16-1时，压缩列表的包含的节点数，就需要整体遍历来得到了。
+ * 
  *
  * <uint8_t zlend> is a special entry representing the end of the ziplist.
  * Is encoded as a single byte equal to 255. No other normal entry starts
  * with a byte set to the value of 255.
+ * zlend uint8_t类型：用来标识ziplist结尾的特殊节点。特殊值0xFF,十进制是255。
  *
  * ZIPLIST ENTRIES
  * ===============
