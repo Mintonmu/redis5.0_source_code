@@ -16,7 +16,7 @@
  * ----------------------------------------------------------------------------
  *
  * ZIPLIST OVERALL LAYOUT
- * ====================== 
+ * ======================
  * ZIPLIST整体设计如下：
  * 
  * The general layout of the ziplist is as follows:
@@ -197,7 +197,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <stdio.h>
+#include <stdio.h> 
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
